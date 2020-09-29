@@ -7,7 +7,8 @@ const keys = require('./config/keys');
 const mongoParams = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useCreateIndex: true
+  useCreateIndex: true,
+  useFindAndModify: false
 }
 mongoose.connect(keys.mongoURI, mongoParams, (err) => {
   if (err) {
