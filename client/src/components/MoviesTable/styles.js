@@ -7,5 +7,12 @@ export const styles = theme => ({
   root: {
     width: '100%',
     overflowX: 'auto',
+    '& > * + *': {
+      marginLeft: theme.spacing(6),
+    }
   },
+  loader: {
+    display: 'flex',
+    justifyContent: 'center'
+  }
 });

@@ -1,4 +1,5 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
+import { useQuery } from '@apollo/client';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -12,96 +13,97 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CreateIcon from '@material-ui/icons/Create';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import MoviesDialog from '../MoviesDialog/MoviesDialog';
+import { moviesQuery } from './queries';
 
 import { withStyles } from '@material-ui/core/styles';
 import { styles } from './styles';
 
-const movies = [
-  { id: 1, name: 'Pulp Fiction', genre: 'Crime', rate: 10, director: { name: 'Quentin Tarantino' }, watched: true },
-  { id: 2, name: 'Lock, Stock and Two Smoking Barrels', genre: 'Crime-comedy', rate: 9, director: { name: 'Guy Ritchie' }, watched: false },
-];
+const MoviesTable = (props) => {
 
-class MoviesTable extends React.Component {
-  state = {
-    anchorEl: null,
-    openDialog: false,
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState({});
+
+  const handleClick = ({ currentTarget }, data) => {
+    setAnchorEl(currentTarget);
+    setSelectedMovie(data);
   };
 
-  handleDialogOpen = () => { this.setState({ openDialog: true }); };
-  handleDialogClose = () => { this.setState({ openDialog: false }); };
-
-  handleClick = ({ currentTarget }, data) => {
-    this.setState({
-      anchorEl: currentTarget,
-      data,
-    });
+  const handleEdit = () => {
+    props.onOpen(selectedMovie);
+    setAnchorEl(null);
   };
 
-  handleClose = () => { this.setState({ anchorEl: null }); };
-
-  handleEdit = () => {
-    this.props.onOpen(this.state.data);
-    this.handleClose();
+  const handleDelete = () => {
+    setOpenDialog(true);
+    setAnchorEl(null);
   };
 
-  handleDelete = () => {
-    this.handleDialogOpen();
-    this.handleClose();
-  };
+  const { loading, error, data } = useQuery(moviesQuery);
 
-  render() {
-    const { anchorEl, openDialog, data: activeElem = {} } = this.state;
-
-    const { classes } = this.props;
-
+  if (loading) {
     return (
-      <Fragment>
-        <MoviesDialog open={openDialog} handleClose={this.handleDialogClose} id={activeElem.id} />
-        <Paper className={classes.root}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Genre</TableCell>
-                <TableCell align="right">Rate</TableCell>
-                <TableCell>Director</TableCell>
-                <TableCell>Watched</TableCell>
-                <TableCell align="right"></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {movies.map(movie => {
-                return (
-                  <TableRow key={movie.id}>
-                    <TableCell component="th" scope="row">{movie.name}</TableCell>
-                    <TableCell>{movie.genre}</TableCell>
-                    <TableCell align="right">{movie.rate}</TableCell>
-                    <TableCell>{movie.director.name}</TableCell>
-                    <TableCell>
-                      <Checkbox checked={movie.watched} disabled />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Fragment>
-                        <IconButton color="inherit" onClick={(e) => this.handleClick(e, movie)}>
-                          <MoreIcon />
-                        </IconButton>
-                        <Menu id="simple-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={this.handleClose} >
-                          <MenuItem onClick={this.handleEdit}><CreateIcon /> Edit</MenuItem>
-                          <MenuItem onClick={this.handleDelete}><DeleteIcon /> Delete</MenuItem>
-                        </Menu>
-                      </Fragment>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Paper>
-      </Fragment>
+      <div className={props.classes.loader}>
+        <CircularProgress />
+      </div>
     );
   }
+  if (error) console.log(error);
+
+  const { movies = [] } = data;
+
+  return (
+    <Fragment>
+      <MoviesDialog
+        open={openDialog}
+        handleClose={() => setOpenDialog(false)}
+        id={selectedMovie.activeElem ? selectedMovie.activeElem.id : null}
+      />
+      <Paper className={props.classes.root}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Genre</TableCell>
+              <TableCell align="right">Rate</TableCell>
+              <TableCell>Director</TableCell>
+              <TableCell>Watched</TableCell>
+              <TableCell align="right"></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {movies.map(movie => {
+              return (
+                <TableRow key={movie.id}>
+                  <TableCell component="th" scope="row">{movie.name}</TableCell>
+                  <TableCell>{movie.genre}</TableCell>
+                  <TableCell align="right">{movie.rate}</TableCell>
+                  <TableCell>{movie.director.name}</TableCell>
+                  <TableCell>
+                    <Checkbox checked={movie.watched} disabled />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Fragment>
+                      <IconButton color="inherit" onClick={(e) => handleClick(e, movie)}>
+                        <MoreIcon />
+                      </IconButton>
+                      <Menu id="simple-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)} >
+                        <MenuItem onClick={handleEdit}><CreateIcon /> Edit</MenuItem>
+                        <MenuItem onClick={handleDelete}><DeleteIcon /> Delete</MenuItem>
+                      </Menu>
+                    </Fragment>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Paper>
+    </Fragment>
+  );
 };
 
 export default withStyles(styles)(MoviesTable);
