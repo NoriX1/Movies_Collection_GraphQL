@@ -1,4 +1,5 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
+import { useQuery } from '@apollo/client';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -11,91 +12,93 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CreateIcon from '@material-ui/icons/Create';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import DirectorsDialog from '../DirectorsDialog/DirectorsDialog';
+import { directorsQuery } from './queries';
 
 import { withStyles } from '@material-ui/core/styles';
 import { styles } from './styles';
 
-const directors = [
-  { id: 1, name: 'Quentin Tarantino', age: 55, movies: [{ name: 'Movie 1' }, { name: 'Movie 2' }] },
-  { id: 2, name: 'Guy Ritchie', age: 50, movies: [{ name: 'Movie 1' }, { name: 'Movie 2' }] }
-];
+const DirectorsTable = props => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedDirector, setSelectedDirector] = useState({});
 
-class DirectorsTable extends React.Component {
-  state = {
-    anchorEl: null,
-    openDialog: false,
+  const handleClick = ({ currentTarget }, data) => {
+    setAnchorEl(currentTarget);
+    setSelectedDirector(data);
   };
 
-  handleDialogOpen = () => { this.setState({ openDialog: true }); };
-  handleDialogClose = () => { this.setState({ openDialog: false }); };
-
-  handleClick = ({ currentTarget }, data) => {
-    this.setState({
-      anchorEl: currentTarget,
-      data,
-    });
+  const handleEdit = () => {
+    props.onOpen(selectedDirector);
+    setAnchorEl(null);
   };
 
-  handleClose = () => { this.setState({ anchorEl: null }); };
-
-  handleEdit = (row) => {
-    this.props.onOpen(this.state.data);
-    this.handleClose();
+  const handleDelete = () => {
+    setOpenDialog(true);
+    setAnchorEl(null);
   };
 
-  handleDelete = () => {
-    this.handleDialogOpen();
-    this.handleClose();
-  };
+  const { loading, error, data } = useQuery(directorsQuery);
 
-  render() {
-    const { anchorEl, openDialog, data: activeElem = {} } = this.state;
-    const { classes } = this.props;
-
+  if (loading) {
     return (
-      <Fragment>
-        <DirectorsDialog open={openDialog} handleClose={this.handleDialogClose} id={activeElem.id} />
-        <Paper className={classes.root}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell align="right">Age</TableCell>
-                <TableCell>Movies</TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {directors.map(director => {
-                return (
-                  <TableRow key={director.id}>
-                    <TableCell component="th" scope="row">{director.name}</TableCell>
-                    <TableCell align="right">{director.age}</TableCell>
-                    <TableCell>
-                      {director.movies.map((movie, key) => <div key={movie.name}>{`${key + 1}. `}{movie.name}</div>)}
-                    </TableCell>
-                    <TableCell align="right">
-                      <Fragment>
-                        <IconButton color="inherit" onClick={(e) => this.handleClick(e, director)}>
-                          <MoreIcon />
-                        </IconButton>
-                        <Menu id="simple-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={this.handleClose} >
-                          <MenuItem onClick={() => this.handleEdit(director)}><CreateIcon /> Edit</MenuItem>
-                          <MenuItem onClick={this.handleDelete}><DeleteIcon /> Delete</MenuItem>
-                        </Menu>
-                      </Fragment>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Paper>
-      </Fragment>
+      <div className={props.classes.loader}>
+        <CircularProgress />
+      </div>
     );
   }
+
+  if (error) console.log(error);
+
+  const { directors = [] } = data;
+
+  return (
+    <Fragment>
+      <DirectorsDialog
+        open={openDialog}
+        handleClose={() => setOpenDialog(false)}
+        id={selectedDirector.activeElem ? selectedDirector.activeElem.id : null}
+      />
+      <Paper className={props.classes.root}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell align="right">Age</TableCell>
+              <TableCell>Movies</TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {directors.map(director => {
+              return (
+                <TableRow key={director.id}>
+                  <TableCell component="th" scope="row">{director.name}</TableCell>
+                  <TableCell align="right">{director.age}</TableCell>
+                  <TableCell>
+                    {director.movies.map((movie, key) => <div key={movie.name}>{`${key + 1}. `}{movie.name}</div>)}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Fragment>
+                      <IconButton color="inherit" onClick={(e) => handleClick(e, director)}>
+                        <MoreIcon />
+                      </IconButton>
+                      <Menu id="simple-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)} >
+                        <MenuItem onClick={() => handleEdit(director)}><CreateIcon /> Edit</MenuItem>
+                        <MenuItem onClick={handleDelete}><DeleteIcon /> Delete</MenuItem>
+                      </Menu>
+                    </Fragment>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Paper>
+    </Fragment>
+  );
 };
 
 export default withStyles(styles)(DirectorsTable);

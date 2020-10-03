@@ -21,7 +21,7 @@ import { moviesQuery } from './queries';
 import { withStyles } from '@material-ui/core/styles';
 import { styles } from './styles';
 
-const MoviesTable = (props) => {
+const MoviesTable = props => {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -51,6 +51,7 @@ const MoviesTable = (props) => {
       </div>
     );
   }
+
   if (error) console.log(error);
 
   const { movies = [] } = data;

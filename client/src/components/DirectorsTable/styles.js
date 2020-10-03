@@ -8,4 +8,8 @@ export const styles = theme => ({
     width: '100%',
     overflowX: 'auto',
   },
+  loader: {
+    display: 'flex',
+    justifyContent: 'center'
+  }
 });
