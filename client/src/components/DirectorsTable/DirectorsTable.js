@@ -59,7 +59,7 @@ const DirectorsTable = props => {
       <DirectorsDialog
         open={openDialog}
         handleClose={() => setOpenDialog(false)}
-        id={selectedDirector.activeElem ? selectedDirector.activeElem.id : null}
+        id={selectedDirector.id ? selectedDirector.id : null}
       />
       <Paper className={props.classes.root}>
         <Table>
