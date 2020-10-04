@@ -10,20 +10,31 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { withStyles } from '@material-ui/core/styles';
 import { styles } from './styles';
 
-import { addDirectorMutation } from './mutations';
+import { addDirectorMutation, updateDirectorMutation } from './mutations';
 import { directorsQuery } from '../DirectorsTable/queries';
 
 const DirectorsForm = props => {
   const [formError, setFormError] = useState('');
   const { classes, open, onClose, handleChange, selectedValue = {} } = props;
   const { name, age } = selectedValue;
-  const [saveDirector, { loading, error }] = useMutation(addDirectorMutation, {
+
+  const [addDirector, { loading: addDirectorLoading, }] = useMutation(addDirectorMutation, {
     onCompleted() {
       setFormError('');
       onClose();
     },
     onError(error) {
-      console.log(error);
+      setFormError(error.message);
+    },
+  });
+
+  const [updateDirector, { loading: updateDirectorLoading }] = useMutation(updateDirectorMutation, {
+    onCompleted() {
+      setFormError('');
+      onClose();
+    },
+    onError(error) {
+      setFormError(error.message);
     },
   });
 
@@ -35,23 +46,27 @@ const DirectorsForm = props => {
     if (age <= 0 || age >= 125) {
       return setFormError('You must enter a valid age');
     }
-    saveDirector({
-      variables: { name, age: Number(age) },
-      refetchQueries: [{ query: directorsQuery }]
-    });
+    if (id) {
+      updateDirector({
+        variables: { id, name, age: Number(age) },
+        refetchQueries: [{ query: directorsQuery }]
+      })
+    } else {
+      addDirector({
+        variables: { name, age: Number(age) },
+        refetchQueries: [{ query: directorsQuery }]
+      });
+    }
   };
 
   const renderButton = () => {
-    if (loading) {
+    if (addDirectorLoading || updateDirectorLoading) {
       return <Fragment><CircularProgress color='secondary' /> Saving...</Fragment>
     }
     return <Fragment><SaveIcon /> Save</Fragment>;
   }
 
   const renderError = () => {
-    if (error) {
-      return <div className={classes.error}><span>{error.message}</span></div>;
-    }
     if (formError) {
       return <div className={classes.error}><span>{formError}</span></div>;
     }

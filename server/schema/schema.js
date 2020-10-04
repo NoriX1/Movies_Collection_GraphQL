@@ -93,9 +93,7 @@ const Mutation = new GraphQLObjectType({
       args: {
         id: { type: GraphQLID },
         name: { type: new GraphQLNonNull(GraphQLString) },
-        age: { type: GraphQLInt },
-        watched: { type: new GraphQLNonNull(GraphQLBoolean) },
-        rate: { type: GraphQLInt }
+        age: { type: GraphQLInt }
       },
       resolve(parent, args) {
         return Director.findOneAndUpdate(
