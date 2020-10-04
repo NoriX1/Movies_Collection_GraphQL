@@ -24,7 +24,7 @@ const DirectorsDialog = props => {
     const { id } = props;
     deleteDirector({
       variables: { id },
-      refetchQueries: [{ query: directorsQuery }]
+      refetchQueries: [{ query: directorsQuery, variables: { name: '' } }]
     })
   };
 

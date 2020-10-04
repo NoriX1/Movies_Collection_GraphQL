@@ -49,12 +49,12 @@ const DirectorsForm = props => {
     if (id) {
       updateDirector({
         variables: { id, name, age: Number(age) },
-        refetchQueries: [{ query: directorsQuery }]
+        refetchQueries: [{ query: directorsQuery, variables: { name: '' } }]
       })
     } else {
       addDirector({
         variables: { name, age: Number(age) },
-        refetchQueries: [{ query: directorsQuery }]
+        refetchQueries: [{ query: directorsQuery, variables: { name: '' } }]
       });
     }
   };

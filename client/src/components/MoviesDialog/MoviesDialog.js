@@ -24,7 +24,7 @@ const MoviesDialog = props => {
     const { id } = props;
     deleteMovie({
       variables: { id },
-      refetchQueries: [{ query: moviesQuery }]
+      refetchQueries: [{ query: moviesQuery, variables: { name: '' } }]
     })
   };
 

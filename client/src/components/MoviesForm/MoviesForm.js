@@ -64,7 +64,7 @@ const MoviesForm = props => {
           directorId,
           watched: Boolean(watched)
         },
-        refetchQueries: [{ query: moviesQuery }]
+        refetchQueries: [{ query: moviesQuery, variables: { name: '' } }]
       })
     } else {
       addMovie({
@@ -75,7 +75,7 @@ const MoviesForm = props => {
           directorId,
           watched: Boolean(watched)
         },
-        refetchQueries: [{ query: moviesQuery }]
+        refetchQueries: [{ query: moviesQuery, variables: { name: '' } }]
       })
     }
   };
@@ -94,7 +94,7 @@ const MoviesForm = props => {
     return null;
   }
 
-  const { data } = useQuery(fetchDirectorsQuery);
+  const { data } = useQuery(fetchDirectorsQuery, { variables: { name: '' } });
   const directors = data ? data.directors : [];
 
   return (
