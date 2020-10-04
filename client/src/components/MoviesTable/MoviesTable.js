@@ -14,6 +14,7 @@ import Menu from '@material-ui/core/Menu';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CreateIcon from '@material-ui/icons/Create';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import MoviesSearch from '../MoviesSearch/MoviesSearch';
 
 import MoviesDialog from '../MoviesDialog/MoviesDialog';
 import { moviesQuery } from './queries';
@@ -26,6 +27,7 @@ const MoviesTable = props => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState({});
+  const [searchString, setSearchString] = useState('');
 
   const handleClick = ({ currentTarget }, data) => {
     setAnchorEl(currentTarget);
@@ -42,7 +44,13 @@ const MoviesTable = props => {
     setAnchorEl(null);
   };
 
-  const { loading, error, data } = useQuery(moviesQuery);
+  const handleSearch = (e) => {
+    if (e.charCode === 13) {
+      refetch({ name: searchString });
+    }
+  };
+
+  const { loading, error, data, refetch } = useQuery(moviesQuery, { variables: { name: '' } });
 
   if (loading) {
     return (
@@ -58,6 +66,13 @@ const MoviesTable = props => {
 
   return (
     <Fragment>
+      <Paper>
+        <MoviesSearch
+          name={searchString}
+          handleChange={() => e => setSearchString(e.target.value)}
+          handleSearch={handleSearch}
+        />
+      </Paper>
       <MoviesDialog
         open={openDialog}
         handleClose={() => setOpenDialog(false)}

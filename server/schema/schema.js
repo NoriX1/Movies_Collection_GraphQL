@@ -147,8 +147,11 @@ const RootQuery = new GraphQLObjectType({
     },
     movies: {
       type: new GraphQLList(MovieType),
-      resolve(parent, args) {
-        return Movie.find({});
+      args: {
+        name: { type: GraphQLString }
+      },
+      resolve(parent, { name }) {
+        return Movie.find({ name: { $regex: name, $options: "i" } });
       }
     },
     directors: {
