@@ -156,8 +156,11 @@ const RootQuery = new GraphQLObjectType({
     },
     directors: {
       type: new GraphQLList(DirectorType),
-      resolve(parent, args) {
-        return Director.find({});
+      args: {
+        name: { type: GraphQLString }
+      },
+      resolve(parent, { name }) {
+        return Director.find({ name: { $regex: name, $options: "i" } });
       }
     }
   }

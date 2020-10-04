@@ -13,6 +13,7 @@ import Menu from '@material-ui/core/Menu';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CreateIcon from '@material-ui/icons/Create';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import DirectorsSearch from '../DirectorsSearch/DirectorsSearch';
 
 import DirectorsDialog from '../DirectorsDialog/DirectorsDialog';
 import { directorsQuery } from './queries';
@@ -24,6 +25,7 @@ const DirectorsTable = props => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedDirector, setSelectedDirector] = useState({});
+  const [searchString, setSearchString] = useState('');
 
   const handleClick = ({ currentTarget }, data) => {
     setAnchorEl(currentTarget);
@@ -40,7 +42,13 @@ const DirectorsTable = props => {
     setAnchorEl(null);
   };
 
-  const { loading, error, data } = useQuery(directorsQuery);
+  const handleSearch = (e) => {
+    if (e.charCode === 13) {
+      refetch({ name: searchString });
+    }
+  };
+
+  const { loading, error, data, refetch } = useQuery(directorsQuery, { variables: { name: '' } });
 
   if (loading) {
     return (
@@ -56,6 +64,13 @@ const DirectorsTable = props => {
 
   return (
     <Fragment>
+      <Paper>
+        <DirectorsSearch
+          name={searchString}
+          handleChange={() => e => setSearchString(e.target.value)}
+          handleSearch={handleSearch}
+        />
+      </Paper>
       <DirectorsDialog
         open={openDialog}
         handleClose={() => setOpenDialog(false)}
