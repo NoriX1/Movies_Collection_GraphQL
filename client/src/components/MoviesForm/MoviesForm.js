@@ -17,7 +17,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { withStyles } from '@material-ui/core/styles';
 import { styles } from './styles';
 
-import { addMovieMutation } from './mutation';
+import { addMovieMutation, updateMovieMutation } from './mutation';
 import { moviesQuery } from '../MoviesTable/queries';
 import { fetchDirectorsQuery } from './queries';
 
@@ -28,13 +28,23 @@ const MoviesForm = props => {
   const { classes, open, handleChange, handleSelectChange, handleCheckboxChange, onClose, selectedValue = {} } = props;
   const { name, genre, rate, directorId, watched } = selectedValue;
 
-  const [addMovie, { loading: mutationLoading, error: mutationError }] = useMutation(addMovieMutation, {
+  const [addMovie, { loading: addMovieLoading }] = useMutation(addMovieMutation, {
     onCompleted() {
       setFormError('');
       onClose();
     },
     onError(error) {
-      console.log(error);
+      setFormError(error.message);
+    }
+  });
+
+  const [updateMovie, { loading: updateMovieLoading }] = useMutation(updateMovieMutation, {
+    onCompleted() {
+      setFormError('');
+      onClose();
+    },
+    onError(error) {
+      setFormError(error.message);
     }
   });
 
@@ -43,29 +53,41 @@ const MoviesForm = props => {
     if (!name || !genre) {
       return setFormError('You should enter all required fields!')
     }
-    addMovie({
-      variables: {
-        name,
-        genre,
-        rate: Number(rate),
-        directorId,
-        watched: Boolean(watched)
-      },
-      refetchQueries: [{ query: moviesQuery }]
-    })
+
+    if (id) {
+      updateMovie({
+        variables: {
+          id,
+          name,
+          genre,
+          rate: Number(rate),
+          directorId,
+          watched: Boolean(watched)
+        },
+        refetchQueries: [{ query: moviesQuery }]
+      })
+    } else {
+      addMovie({
+        variables: {
+          name,
+          genre,
+          rate: Number(rate),
+          directorId,
+          watched: Boolean(watched)
+        },
+        refetchQueries: [{ query: moviesQuery }]
+      })
+    }
   };
 
   const renderButton = () => {
-    if (mutationLoading) {
+    if (addMovieLoading || updateMovieLoading) {
       return <Fragment><CircularProgress color='secondary' /> Saving...</Fragment>
     }
     return <Fragment><SaveIcon /> Save</Fragment>;
   }
 
   const renderError = () => {
-    if (mutationError) {
-      return <div className={classes.error}><span>{mutationError.message}</span></div>;
-    }
     if (formError) {
       return <div className={classes.error}><span>{formError}</span></div>;
     }
@@ -83,7 +105,7 @@ const MoviesForm = props => {
           id="outlined-name"
           label="Name*"
           className={classes.textField}
-          value={name}
+          value={name || ''}
           onChange={handleChange('name')}
           margin="normal"
           variant="outlined"
@@ -92,7 +114,7 @@ const MoviesForm = props => {
           id="outlined-genre"
           label="Genre*"
           className={classes.textField}
-          value={genre}
+          value={genre || ''}
           onChange={handleChange('genre')}
           margin="normal"
           variant="outlined"
@@ -100,7 +122,7 @@ const MoviesForm = props => {
         <TextField
           id="outlined-rate"
           label="Rate"
-          value={rate}
+          value={rate || ''}
           onChange={handleChange('rate')}
           type="number"
           className={classes.textField}
@@ -109,7 +131,6 @@ const MoviesForm = props => {
         />
         <FormControl variant="outlined" className={classes.formControlSelect}>
           <InputLabel
-            // ref={ref => { this.InputLabelRef = ref; }}
             ref={ref => { InputLabelRef.current = ref; }}
             htmlFor="outlined-age-simple"
           >

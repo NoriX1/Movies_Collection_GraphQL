@@ -81,7 +81,7 @@ const DirectorsForm = props => {
           id="outlined-name"
           label="Name"
           className={classes.textField}
-          value={name}
+          value={name || ''}
           onChange={handleChange('name')}
           margin="normal"
           variant="outlined"
@@ -90,7 +90,7 @@ const DirectorsForm = props => {
           id="outlined-rate"
           label="Age"
           className={classes.textField}
-          value={age}
+          value={age || ''}
           onChange={handleChange('age')}
           type="number"
           margin="normal"
