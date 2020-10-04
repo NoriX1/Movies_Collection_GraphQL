@@ -61,7 +61,7 @@ const MoviesTable = props => {
       <MoviesDialog
         open={openDialog}
         handleClose={() => setOpenDialog(false)}
-        id={selectedMovie.activeElem ? selectedMovie.activeElem.id : null}
+        id={selectedMovie.id ? selectedMovie.id : null}
       />
       <Paper className={props.classes.root}>
         <Table>

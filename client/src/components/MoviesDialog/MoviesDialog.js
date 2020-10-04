@@ -1,4 +1,5 @@
 import React from 'react';
+import { useMutation } from '@apollo/client';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -8,40 +9,50 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import BlockIcon from '@material-ui/icons/Block';
 
-class MoviesDialog extends React.Component {
+import { deleteMovieMutation } from './mutations';
+import { moviesQuery } from '../MoviesTable/queries'
 
-  handleDelete = () => {
-    const { id, handleClose } = this.props;
-    handleClose();
-  }
+const MoviesDialog = props => {
 
-  render() {
-    const { open, handleClose } = this.props;
+  const [deleteMovie] = useMutation(deleteMovieMutation, {
+    onCompleted() {
+      props.handleClose();
+    }
+  });
 
-    return (
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{"Are you sure that you want to delete element?"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            If you click 'Confirm' this element will be removed from data base.
+  const handleDelete = () => {
+    const { id } = props;
+    deleteMovie({
+      variables: { id },
+      refetchQueries: [{ query: moviesQuery }]
+    })
+  };
+
+  const { open, handleClose } = props;
+
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">{"Are you sure that you want to delete element?"}</DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          If you click 'Confirm' this element will be removed from data base.
           </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            <BlockIcon /> Cancel
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          <BlockIcon /> Cancel
           </Button>
-          <Button onClick={this.handleDelete} color="primary" autoFocus>
-            <DeleteForeverIcon /> Confirm
+        <Button onClick={handleDelete} color="primary" autoFocus>
+          <DeleteForeverIcon /> Confirm
           </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  }
+      </DialogActions>
+    </Dialog>
+  );
 }
 
 export default MoviesDialog;
