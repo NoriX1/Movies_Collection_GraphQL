@@ -67,7 +67,7 @@ const Mutation = new GraphQLObjectType({
         rate: { type: GraphQLInt }
       },
       resolve(parent, { name, genre, directorId, watched, rate }) {
-        return movie.save(new Movie({ name, genre, directorId, watched, rate }));
+        return (new Movie({ name, genre, directorId, watched, rate })).save();
       }
     },
     deleteDirector: {

@@ -59,7 +59,7 @@ const DirectorsForm = props => {
   }
 
   return (
-    <Dialog onClose={() => { setFormError(''); props.onClose() }} open={open} aria-labelledby="simple-dialog-title">
+    <Dialog onClose={() => { setFormError(''); onClose() }} open={open} aria-labelledby="simple-dialog-title">
       <DialogTitle className={classes.title} id="simple-dialog-title">Director information</DialogTitle>
       <form className={classes.container} noValidate autoComplete="off">
         <TextField

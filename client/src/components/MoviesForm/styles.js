@@ -22,5 +22,10 @@ export const styles = theme => ({
   },
   button: {
     minWidth: 100,
+  },
+  error: {
+    marginTop: theme.spacing(1),
+    display: 'flex',
+    justifyContent: 'center',
   }
 });
