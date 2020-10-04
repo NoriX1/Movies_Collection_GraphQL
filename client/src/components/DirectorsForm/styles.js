@@ -21,4 +21,9 @@ export const styles = theme => ({
     minWidth: 100,
     minHeight: 48,
   },
+  error: {
+    marginTop: theme.spacing(1),
+    display: 'flex',
+    justifyContent: 'center',
+  },
 });

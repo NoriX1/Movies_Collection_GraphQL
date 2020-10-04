@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { Fragment, useState } from 'react';
 import { useMutation } from '@apollo/client';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
 import SaveIcon from '@material-ui/icons/Save';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import { withStyles } from '@material-ui/core/styles';
 import { styles } from './styles';
@@ -13,23 +14,52 @@ import { addDirectorMutation } from './mutations';
 import { directorsQuery } from '../DirectorsTable/queries';
 
 const DirectorsForm = props => {
-
-  const [saveDirector] = useMutation(addDirectorMutation);
-  const { classes, open, handleChange, selectedValue = {} } = props;
+  const [formError, setFormError] = useState('');
+  const { classes, open, onClose, handleChange, selectedValue = {} } = props;
   const { name, age } = selectedValue;
+  const [saveDirector, { loading, error }] = useMutation(addDirectorMutation, {
+    onCompleted() {
+      setFormError('');
+      onClose();
+    },
+    onError(error) {
+      console.log(error);
+    },
+  });
 
   const handleSave = () => {
-    const { selectedValue, onClose } = props;
-    const { id, name, age } = selectedValue;
+    const { id, name, age } = props.selectedValue;
+    if (!name) {
+      return setFormError('Name cannot be empty string!');
+    }
+    if (age <= 0 || age >= 125) {
+      return setFormError('You must enter a valid age');
+    }
     saveDirector({
       variables: { name, age: Number(age) },
       refetchQueries: [{ query: directorsQuery }]
     });
-    onClose();
   };
 
+  const renderButton = () => {
+    if (loading) {
+      return <Fragment><CircularProgress color='secondary' /> Saving...</Fragment>
+    }
+    return <Fragment><SaveIcon /> Save</Fragment>;
+  }
+
+  const renderError = () => {
+    if (error) {
+      return <div className={classes.error}><span>{error.message}</span></div>;
+    }
+    if (formError) {
+      return <div className={classes.error}><span>{formError}</span></div>;
+    }
+    return null;
+  }
+
   return (
-    <Dialog onClose={() => { props.onClose() }} open={open} aria-labelledby="simple-dialog-title">
+    <Dialog onClose={() => { setFormError(''); props.onClose() }} open={open} aria-labelledby="simple-dialog-title">
       <DialogTitle className={classes.title} id="simple-dialog-title">Director information</DialogTitle>
       <form className={classes.container} noValidate autoComplete="off">
         <TextField
@@ -51,10 +81,11 @@ const DirectorsForm = props => {
           margin="normal"
           variant="outlined"
         />
+        {renderError()}
         <div className={classes.wrapper}>
           <Button onClick={handleSave} variant="contained" color="primary" className={classes.button}>
-            <SaveIcon /> Save
-            </Button>
+            {renderButton()}
+          </Button>
         </div>
       </form>
     </Dialog>
